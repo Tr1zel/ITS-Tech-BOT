@@ -1,17 +1,15 @@
 from aiogram import F, Router
 from aiogram.fsm.state import StatesGroup, State
 from aiogram.fsm.context import FSMContext
-from aiogram.types import (ReplyKeyboardMarkup, KeyboardButton,
-                           InlineKeyboardButton, InlineKeyboardMarkup, ReplyKeyboardRemove)
+from aiogram.types import (ReplyKeyboardMarkup, KeyboardButton)
 from aiogram.filters import Command
 from aiogram.types import Message
 
-
-from app.keyboards import main
+# from run import ADMINS
 from config import ADMIN_ID
+from app.keyboards import main
 from app.functions import (get_creative_points, get_engineers_points,
-                           add_creative_points, add_engineers_points,
-                           get_name_from_id, check_registration)
+                           add_creative_points, add_engineers_points)
 
 """
 Все админ клавиатуры, админ хендлеры и все что связано с администратором
