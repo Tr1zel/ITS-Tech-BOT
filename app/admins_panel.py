@@ -19,13 +19,15 @@ router_admin = Router()
 admin_keyboard_edit_points = ReplyKeyboardMarkup(keyboard = [
     [KeyboardButton(text='Изменить(посмотреть) количество баллов')],
     [KeyboardButton(text='Выйти из режима Администратора')]
-], resize_keyboard=True)
+], resize_keyboard=True) # Основная клавиатура админа 
 
+# клавиатура изменения типа баллов
 admin_keyboard_type_score = ReplyKeyboardMarkup(keyboard=[
     [KeyboardButton(text='Изменить инженерные баллы'), KeyboardButton(text='Изменить креативные баллы')],
     [KeyboardButton(text='Выйти из режима Администратора')]
 ], resize_keyboard=True, input_field_placeholder='Выберите режим изменения баллов...')
 
+# клавиатура изменения типа баллов с кнопкой назад
 admin_keyboard_type_score_with_back = ReplyKeyboardMarkup(keyboard=[
     [KeyboardButton(text='Изменить инженерные баллы'), KeyboardButton(text='Изменить креативные баллы')],
     [KeyboardButton(text='Назад')],
@@ -38,7 +40,7 @@ class UserAdminStates(StatesGroup): # Cостояния для получени�
     Query_engineer_points = State()
     Query_creative_points = State()
 
-@router_admin.message(Command('admin'))
+@router_admin.message(Command('admin')) # начальный хендлер для входа в админ панель
 async def admin(message: Message):
     if message.from_user.id == int(ADMIN_ID):
         await message.answer(f'Добро пожаловать в админ меню!\n'
@@ -46,18 +48,18 @@ async def admin(message: Message):
         await message.answer(f'Для изменения баллов нажмите кнопку ниже', reply_markup=admin_keyboard_edit_points),
     else: await message.reply('Нет такой команды!')
 
-@router_admin.message(F.text == 'Выйти из режима Администратора')
+@router_admin.message(F.text == 'Выйти из режима Администратора') # хендлер выхода из админ режима
 async def bye_message(message: Message):
     await message.answer(text='Вы вышли из режима Администратора!',
                          reply_markup=main)
 
-@router_admin.message(F.text == 'Изменить(посмотреть) количество баллов')
+@router_admin.message(F.text == 'Изменить(посмотреть) количество баллов') # функция для получения(изменения) баллов
 async def edit_points(message: Message, state: FSMContext):
     await message.answer(text='Введите имя пользователя, чтобы получить баллы.')
     await state.set_state(UserAdminStates.Query_name)
 
 
-@router_admin.message(UserAdminStates.Query_name)
+@router_admin.message(UserAdminStates.Query_name) # состояние ожидание имени для правки баллов
 async def edit_points_for_name(message: Message, state: FSMContext):
     await state.update_data(name=message.text)
     user_data = await state.get_data()
@@ -72,17 +74,19 @@ async def edit_points_for_name(message: Message, state: FSMContext):
     else:
         await message.answer('Пользователь не найден. Попробуйте снова.')
 
-@router_admin.message(F.text == 'Назад')
+@router_admin.message(F.text == 'Назад') # хендлер для кнопки назад, что бы посмотреть баллы другого пользователя
 async def back_to_edit(message: Message):
     await message.answer('Вы вернулись назад.',
                          reply_markup=admin_keyboard_edit_points)
 
-@router_admin.message(F.text == 'Изменить инженерные баллы', UserAdminStates.Query_NoneType_points)
+# хендлер для изменения Инженерных баллов
+@router_admin.message(F.text == 'Изменить инженерные баллы', UserAdminStates.Query_NoneType_points) 
 async def change_engineer_score(message: Message, state: FSMContext):
     await message.answer(text='Категория баллов - Инженерные\n'
                               'Введите количество баллов которое вы хотите добавить пользователю.')
     await state.set_state(UserAdminStates.Query_engineer_points)
 
+# состояние для получения количества баллов и добавление в бд
 @router_admin.message(UserAdminStates.Query_engineer_points)
 async def change_engineer_score_2(message: Message, state: FSMContext):
     if message.text.isdigit() and 1 <= int(message.text) <= 5:
@@ -97,12 +101,14 @@ async def change_engineer_score_2(message: Message, state: FSMContext):
     else:
         await message.answer('Введен не числовой формат или число не от 1 до 5, попробуйте заново!')
 
+# хендлер для изменения Креативных баллов
 @router_admin.message(F.text == 'Изменить креативные баллы',UserAdminStates.Query_NoneType_points )
 async def change_creative_score(message: Message, state: FSMContext):
     await message.answer(text='Категория баллов - креативные\n'
                               'Введите количество баллов которое вы хотите добавить пользователю.')
     await state.set_state(UserAdminStates.Query_creative_points)
 
+# состояние для получения количества баллов и добавление в бд
 @router_admin.message(UserAdminStates.Query_creative_points)
 async def change_creative_score_2(message: Message, state: FSMContext):
     if message.text.isdigit() and 1 <= int(message.text) <= 5:
